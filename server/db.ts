@@ -1,7 +1,16 @@
 type User = { id: string, name: string }
 
 // Imaginary database
-const users: User[] = [];
+const users: User[] = [
+    {
+        id: "1",
+        name: "John Doe"
+    },
+    {
+        id: "2",
+        name: "Kelvin Qiu"
+    }
+];
 
 export const db = {
     user: {
