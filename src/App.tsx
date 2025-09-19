@@ -1,55 +1,29 @@
 import './App.css'
-import { trpc } from './trpc'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+const POSTS = [
+  { id: 1, title: 'Post 1' },
+  { id: 2, title: 'Post 2' },
+  { id: 3, title: 'Post 3' },
+]
+
+async function wait(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 function App() {
-  const queryClient = useQueryClient();
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => trpc.userList.query(),
+  const postQuery = useQuery({
+    queryKey: ['posts'], // unique key
+    queryFn: () => wait(1000).then(() => [...POSTS])
   })
 
-  const { mutate } = useMutation({
-    mutationFn: (name: string) => trpc.userCreate.mutate({ name }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] }) // 自动重新请求数据
-    }
-  })
-
-  const { data: sayHiData } = useQuery({
-    queryKey: ['sayHi'],
-    queryFn: () => trpc.sayHi.query(),
-  })
-
-  const { mutate: logToServer, data: logToServerData } = useMutation({
-    mutationFn: (message: string) => trpc.logToServer.mutate(message),
-  })
-
-  const { data: userData } = useQuery({
-    queryKey: ['getSecret'],
-    queryFn: () => trpc.getSecret.query()
-  })
-
-  if (isLoading) return <div>Loading...</div>
+  if (postQuery.isLoading) return <h1>Loading...</h1>
+  if (postQuery.isError) return <pre>{JSON.stringify(postQuery.error)}</pre>
 
   return <div>
-    {data?.map((user) => (
-      <div key={user.id}>{user.name}</div>
-    ))}
-    <button onClick={() => mutate(Date.now().toString())}>Create User</button>
-
-    {sayHiData}
-
-    <button onClick={() => logToServer('Hello from client')}>Log to server</button>
-
-    <hr />
-
-    {logToServerData}
-
-    <hr />
-
-    {userData}
+    {postQuery.data?.map(post => {
+      return <div key={post.id}>{post.title}</div>
+    })}
   </div>
 }
 
